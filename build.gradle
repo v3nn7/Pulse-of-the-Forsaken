@@ -1,0 +1,128 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '6.0.35'
+}
+
+version = '0.0.1'
+group = 'com.example.pulseoftheforsaken'
+archivesBaseName = 'pulseoftheforsaken'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty('java.version')}, JVM: ${System.getProperty('java.vm.version')} (${System.getProperty('java.vendor')}), Arch: ${System.getProperty('os.arch')}"
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'pulseoftheforsaken'
+
+            mods {
+                pulseoftheforsaken {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'pulseoftheforsaken'
+
+            mods {
+                pulseoftheforsaken {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        gameTestServer {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'pulseoftheforsaken'
+
+            mods {
+                pulseoftheforsaken {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'pulseoftheforsaken', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                pulseoftheforsaken {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "Forge"
+        url = "https://maven.minecraftforge.net/"
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.0'
+    
+    // Logging
+    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    
+    // Forge dependencies
+    compileOnly fg.deobf("net.minecraftforge:forge:1.20.1-47.4.0")
+    runtimeOnly fg.deobf("net.minecraftforge:forge:1.20.1-47.4.0")
+}
+
+jar {
+    archiveBaseName.set('pulseoftheforsaken')
+    manifest {
+        attributes([
+                "Specification-Title"     : "pulseoftheforsaken",
+                "Specification-Vendor"    : "PulseOfTheForsaken",
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : "PulseOfTheForsaken",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
